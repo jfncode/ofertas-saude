@@ -44,9 +44,9 @@ export async function garimparAliExpress(keywords, { fetchFn = fetch, appKey, ap
       target_language: 'pt',
       page_size: '10',
     };
-    params.sign = assinar(params, appSecret);
-    const qs = new URLSearchParams(params).toString();
     try {
+      params.sign = assinar(params, appSecret);
+      const qs = new URLSearchParams(params).toString();
       const resp = await fetchFn(`${ENDPOINT}?${qs}`);
       if (!resp.ok) { console.error(`[AE] ${kw}: HTTP ${resp.status}`); continue; }
       const data = await resp.json();
