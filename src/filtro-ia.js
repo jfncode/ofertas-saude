@@ -35,7 +35,7 @@ export async function filtrarOfertas(ofertasBrutas, { callModel }) {
       const resposta = await callModel(construirPrompt(oferta));
       const { relevante, categoria, titulo } = interpretarResposta(resposta);
       if (relevante && categoria && CATEGORIAS.includes(categoria)) {
-        out.push({ ...oferta, categoria, titulo: titulo ?? oferta.tituloOriginal });
+        out.push({ ...oferta, categoria, titulo: titulo || oferta.tituloOriginal });
       }
     } catch (err) {
       console.error(`[IA] erro ao filtrar ${oferta.id}:`, err.message);

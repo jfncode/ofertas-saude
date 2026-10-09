@@ -64,3 +64,36 @@ test('falha no canal não registra a oferta (retry no próximo run)', async () =
   assert.equal(r.publicadas, 0);
   assert.equal(deps.estado.ofertas.some(o => o.id === 'ae-fail'), false);
 });
+
+test('pendente resolvido não é perdido se o canal falhar', async () => {
+  const deps = depsFake({
+    carregar: async (k) => k === 'pendentes'
+      ? [{ id: 'ml-7', titulo: 'Luva', categoria: 'Saúde', preco: 10, telegramMessageId: 70 }]
+      : (k === 'offset' ? 0 : []),
+    buscarRespostas: async () => ({ updates: [{ texto: 'http://afil/7', replyToMessageId: 70 }], proximoOffset: 11 }),
+    garimparML: async () => [],
+    publicarNoCanal: async () => { throw new Error('canal fora'); },
+  });
+  const r = await executar(deps);
+  assert.equal(r.publicadas, 0);
+  assert.equal(deps.estado.ofertas.some(o => o.id === 'ml-7'), false);
+  const retido = deps.estado.pendentes.find(p => p.id === 'ml-7');
+  assert.ok(retido, 'pendente resolvido deve permanecer para retry');
+  assert.equal(retido.urlAfiliado, 'http://afil/7');
+});
+
+test('não re-filtra itens já conhecidos (dedup antes do filtro)', async () => {
+  const filtrados = [];
+  const deps = depsFake({
+    carregar: async (k) => k === 'ofertas'
+      ? [{ id: 'ml-known' }]
+      : (k === 'offset' ? 0 : []),
+    garimparML: async () => [
+      { id: 'ml-known', tituloOriginal: 'Conhecido', preco: 1, precoAntigo: null, desconto: 0, imagem: 'i', urlProduto: 'p' },
+      { id: 'ml-new', tituloOriginal: 'Novo', preco: 1, precoAntigo: null, desconto: 0, imagem: 'i', urlProduto: 'p' },
+    ],
+    filtrar: async (brutas) => { filtrados.push(...brutas.map(b => b.id)); return brutas.map(b => ({ ...b, categoria: 'Saúde', titulo: b.tituloOriginal })); },
+  });
+  await executar(deps);
+  assert.deepEqual(filtrados, ['ml-new']);
+});

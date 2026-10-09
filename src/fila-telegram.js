@@ -16,17 +16,6 @@ export function formatarCandidata(oferta) {
   ].join('\n');
 }
 
-export async function enviarCandidatas(ofertas, pendentes, { enviar }) {
-  const jaPendentes = new Set(pendentes.map(p => p.id));
-  const novas = [];
-  for (const oferta of ofertas) {
-    if (jaPendentes.has(oferta.id)) continue;
-    const telegramMessageId = await enviar(formatarCandidata(oferta));
-    novas.push({ ...oferta, telegramMessageId });
-  }
-  return novas;
-}
-
 export function resolverPendentes(pendentes, updates) {
   const porMsgId = new Map(pendentes.map(p => [p.telegramMessageId, p]));
   const resolvidos = new Set();

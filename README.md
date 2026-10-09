@@ -13,7 +13,7 @@ publica num site estático (GitHub Pages) e num canal Telegram. Roda sozinho via
 |---|---|---|
 | `TELEGRAM_TOKEN` | sim | bot do Telegram |
 | `TELEGRAM_CHAT_ID` | sim | seu chat privado (fila de aprovação) |
-| `TELEGRAM_CANAL_ID` | sim | canal público de ofertas |
+| `TELEGRAM_CANAL_ID` | sim | canal público de ofertas (se ausente, usa TELEGRAM_CHAT_ID) |
 | `GEMINI_API_KEY` | sim | filtro de relevância |
 | `ML_ACCESS_TOKEN` | opcional | só se a API do ML exigir auth |
 | `ALIEXPRESS_APP_KEY` / `_APP_SECRET` / `_TRACKING_ID` | opcional | liga a esteira AliExpress |
