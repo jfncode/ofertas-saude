@@ -1,7 +1,7 @@
 export function formatarPost(oferta) {
   const linhas = [`🔥 <b>${oferta.titulo}</b> [${oferta.categoria}]`];
   if (oferta.precoAntigo && oferta.desconto) {
-    linhas.push(`~R$ ${oferta.precoAntigo}~ ➜ <b>R$ ${oferta.preco}</b> (-${oferta.desconto}%)`);
+    linhas.push(`<s>R$ ${oferta.precoAntigo}</s> ➜ <b>R$ ${oferta.preco}</b> (-${oferta.desconto}%)`);
   } else if (oferta.preco != null) {
     linhas.push(`💰 <b>R$ ${oferta.preco}</b>`);
   }
