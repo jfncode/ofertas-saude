@@ -1,0 +1,50 @@
+# .github/workflows/ofertas.yml
+name: Garimpo de Ofertas
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # a cada 6 horas (UTC)
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: ofertas
+  cancel-in-progress: false
+jobs:
+  garimpar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Testes
+        run: npm test
+      - name: Executar garimpo
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CANAL_ID: ${{ secrets.TELEGRAM_CANAL_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ML_ACCESS_TOKEN: ${{ secrets.ML_ACCESS_TOKEN }}
+          ALIEXPRESS_APP_KEY: ${{ secrets.ALIEXPRESS_APP_KEY }}
+          ALIEXPRESS_APP_SECRET: ${{ secrets.ALIEXPRESS_APP_SECRET }}
+          ALIEXPRESS_TRACKING_ID: ${{ secrets.ALIEXPRESS_TRACKING_ID }}
+        run: npm start
+      - name: Commit das mudanças
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add site/ofertas.json data/pendentes.json data/telegram-offset.json
+          git diff --cached --quiet || git commit -m "chore: atualização automática de ofertas [skip ci]"
+          git push
+      - name: Publicar no GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+  deploy:
+    needs: garimpar
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: '${{ steps.deploy.outputs.page_url }}' }
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
