@@ -52,3 +52,15 @@ test('AliExpress publica direto quando há credenciais', async () => {
   assert.equal(r.publicadas, 1);
   assert.ok(deps.estado.canal.includes('ae-1'));
 });
+
+test('falha no canal não registra a oferta (retry no próximo run)', async () => {
+  const deps = depsFake({
+    temCredenciaisAE: () => true,
+    garimparAE: async () => [{ id: 'ae-fail', fonte: 'aliexpress', tituloOriginal: 'X', preco: 5, precoAntigo: null, desconto: 0, imagem: 'i', urlProduto: 'u', urlAfiliado: 'http://ae/1', publicadoEm: 'now' }],
+    garimparML: async () => [],
+    publicarNoCanal: async () => { throw new Error('canal fora do ar'); },
+  });
+  const r = await executar(deps);
+  assert.equal(r.publicadas, 0);
+  assert.equal(deps.estado.ofertas.some(o => o.id === 'ae-fail'), false);
+});

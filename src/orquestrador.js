@@ -8,12 +8,21 @@ export async function executar(deps) {
   let publicadas = 0;
 
   const publicar = async (lista) => {
-    const { resultado, adicionadas } = adicionarOfertas(ofertas, lista);
-    ofertas = resultado;
-    for (const o of adicionadas) {
-      try { await deps.publicarNoCanal(o); publicadas++; }
-      catch (err) { console.error('[publicar] canal falhou:', err.message); }
+    const existentes = new Set(ofertas.map(o => o.id));
+    const publicadasOk = [];
+    for (const o of lista) {
+      if (existentes.has(o.id)) continue;
+      existentes.add(o.id);
+      try {
+        await deps.publicarNoCanal(o);
+        publicadasOk.push(o);
+        publicadas++;
+      } catch (err) {
+        console.error('[publicar] canal falhou:', err.message);
+      }
     }
+    const { resultado } = adicionarOfertas(ofertas, publicadasOk);
+    ofertas = resultado;
   };
 
   // 1. Colher respostas do Telegram e publicar pendentes resolvidos

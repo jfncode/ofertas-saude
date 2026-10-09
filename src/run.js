@@ -1,4 +1,5 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import { CAMINHOS } from './config.js';
 import { garimparML } from './garimpo-ml.js';
 import { garimparAliExpress, temCredenciais } from './garimpo-aliexpress.js';
@@ -27,9 +28,10 @@ const deps = {
     if (k === 'offset') return (await lerJson(CAMINHOS.offset, { offset: 0 })).offset;
   },
   salvar: async (k, v) => {
-    const mapa = { ofertas: CAMINHOS.ofertas, pendentes: CAMINHOS.pendentes };
-    if (k === 'offset') return writeFile(CAMINHOS.offset, JSON.stringify({ offset: v }, null, 2) + '\n');
-    return writeFile(mapa[k], JSON.stringify(v, null, 2) + '\n');
+    const destino = k === 'offset' ? CAMINHOS.offset : { ofertas: CAMINHOS.ofertas, pendentes: CAMINHOS.pendentes }[k];
+    const conteudo = k === 'offset' ? JSON.stringify({ offset: v }, null, 2) : JSON.stringify(v, null, 2);
+    await mkdir(dirname(destino), { recursive: true });
+    return writeFile(destino, conteudo + '\n');
   },
   buscarRespostas: (offset) => buscarRespostas(offset, tg),
   temCredenciaisAE: temCredenciais,
