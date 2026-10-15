@@ -1,3 +1,5 @@
+import { formatarPreco } from './formato.js';
+
 function esc(v) {
   return String(v ?? '')
     .replaceAll('&', '&amp;')
@@ -13,9 +15,13 @@ function urlSegura(v) {
 }
 
 export function renderizarCard(o) {
-  const preco = o.precoAntigo && o.desconto
-    ? `<span class="antigo">R$ ${esc(o.precoAntigo)}</span> <strong>R$ ${esc(o.preco)}</strong> <em>-${esc(o.desconto)}%</em>`
-    : `<strong>R$ ${esc(o.preco)}</strong>`;
+  const p = formatarPreco(o.preco);
+  const pAntigo = formatarPreco(o.precoAntigo);
+  const preco = p && pAntigo && o.desconto
+    ? `<span class="antigo">R$ ${esc(pAntigo)}</span> <strong>R$ ${esc(p)}</strong> <em>-${esc(o.desconto)}%</em>`
+    : p
+      ? `<strong>R$ ${esc(p)}</strong>`
+      : '';
   return `<article class="card" data-cat="${esc(o.categoria)}">
     <img src="${esc(urlSegura(o.imagem))}" alt="${esc(o.titulo)}" loading="lazy">
     <span class="tag">${esc(o.categoria)}</span>

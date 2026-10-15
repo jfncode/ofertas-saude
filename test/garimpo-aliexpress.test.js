@@ -9,6 +9,13 @@ test('assinar é determinística, independe de ordem e dá 64 hex maiúsculos', 
   assert.match(a, /^[0-9A-F]{64}$/);
 });
 
+test('assinar bate com vetor de referência (HMAC-SHA256 calculado por openssl)', () => {
+  // base = chaves ordenadas concatenadas como k+v sem separador: "a1b2methodx"
+  // HMAC-SHA256(key="segredo", base) em hex maiúsculo, verificado via `openssl dgst`
+  const esperado = 'BEC4BA19743C9EF27A81A9FF95D5A78C3DB0BEAC4E52F3065780507CA9582440';
+  assert.equal(assinar({ b: '2', a: '1', method: 'x' }, 'segredo'), esperado);
+});
+
 test('normalizarItemAE usa promotion_link como link de afiliado', () => {
   const o = normalizarItemAE({
     product_id: '456', product_title: 'Massageador',

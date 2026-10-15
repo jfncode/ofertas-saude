@@ -6,8 +6,14 @@ test('formatarPost mostra preço e desconto', () => {
   const txt = formatarPost({ titulo: 'Oxímetro', categoria: 'Saúde', preco: 80, precoAntigo: 100, desconto: 20 });
   assert.ok(txt.includes('Oxímetro'));
   assert.ok(txt.includes('20%'));
-  assert.ok(txt.includes('<s>R$ 100</s>'));
-  assert.ok(txt.includes('R$ 80'));
+  assert.ok(txt.includes('<s>R$ 100,00</s>'));
+  assert.ok(txt.includes('R$ 80,00'));
+});
+
+test('formatarPost sem preço válido omite a linha de preço', () => {
+  const txt = formatarPost({ titulo: 'X', categoria: 'Saúde', preco: null });
+  assert.ok(txt.includes('X'));
+  assert.ok(!txt.includes('R$'));
 });
 
 test('publicarNoCanal envia com botão Comprar', async () => {

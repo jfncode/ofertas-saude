@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-SkemP+fLzm0LUkdcdi8hhx+lGwoWM1szTIKf/7nRReU='; style-src 'unsafe-inline'; img-src https: data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <title>Ofertas Saúde — as melhores promoções de saúde e bem-estar</title>
 <meta name="description" content="Ofertas selecionadas de saúde, bem-estar, fitness e odonto, atualizadas automaticamente.">
 <style>
@@ -24,8 +25,8 @@
 </head>
 <body>
 <header><h1>Ofertas Saúde</h1><p>Promoções de saúde, bem-estar, fitness e odonto — atualizadas automaticamente.</p></header>
-<nav class="filtros" id="filtros"></nav>
-<main id="lista"><p class="vazio">Carregando ofertas…</p></main>
+<nav class="filtros" id="filtros" aria-label="Filtrar ofertas por categoria"></nav>
+<main id="lista" aria-live="polite" aria-busy="true"><p class="vazio">Carregando ofertas…</p></main>
 <script type="module">
 import { renderizarCard } from './render.js';
 const CATS = ['Todas','Saúde','Odonto','Fitness','Cuidado pessoal'];
@@ -36,10 +37,24 @@ function pintar(){
   const f = catAtual==='Todas'?ofertas:ofertas.filter(o=>o.categoria===catAtual);
   lista.innerHTML = f.length ? f.map(renderizarCard).join('') : '<p class="vazio">Nenhuma oferta nesta categoria ainda.</p>';
 }
-CATS.forEach(c=>{const b=document.createElement('button');b.textContent=c;if(c==='Todas')b.classList.add('ativo');
-  b.onclick=()=>{catAtual=c;[...filtros.children].forEach(x=>x.classList.remove('ativo'));b.classList.add('ativo');pintar();};filtros.appendChild(b);});
+CATS.forEach(c=>{
+  const b=document.createElement('button');
+  b.textContent=c;
+  const ativo = c==='Todas';
+  if(ativo)b.classList.add('ativo');
+  b.setAttribute('aria-pressed', String(ativo));
+  b.onclick=()=>{
+    catAtual=c;
+    [...filtros.children].forEach(x=>{x.classList.remove('ativo');x.setAttribute('aria-pressed','false');});
+    b.classList.add('ativo');
+    b.setAttribute('aria-pressed','true');
+    pintar();
+  };
+  filtros.appendChild(b);
+});
 fetch('ofertas.json').then(r=>r.json()).then(d=>{ofertas=d.slice().reverse();pintar();})
-  .catch(()=>{lista.innerHTML='<p class="vazio">Não foi possível carregar as ofertas.</p>';});
+  .catch(()=>{lista.innerHTML='<p class="vazio">Não foi possível carregar as ofertas.</p>';})
+  .finally(()=>lista.setAttribute('aria-busy','false'));
 </script>
 </body>
 </html>
